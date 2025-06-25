@@ -1,7 +1,6 @@
 const { useState } = React;
 
 function App() {
-  // State Management
   const [items, setItems] = useState([]);
   const [people, setPeople] = useState([]);
   const [assignments, setAssignments] = useState({});
@@ -14,25 +13,8 @@ function App() {
   const [editingItem, setEditingItem] = useState(null);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
- 	beforeEach(() => {
-		// Reset state before each test
-		setItems([]);
-		setPeople([]);
-		setAssignments({});
-		setTax({ type: 'percentage', value: 0 });
-		setTip({ percentage: 0 });
-		setRounding('none');
-		setSelectedPerson(null);
-		setNewItemName('');
-		setNewItemPrice('');
-		setEditingItem(null);
-		setEditName('');
-		setEditPrice('');
-		setNewPersonName('');
-	});
   const [newPersonName, setNewPersonName] = useState('');
 
-  // Reset Function
   const resetAll = () => {
     setItems([]);
     setPeople([]);
@@ -49,7 +31,6 @@ function App() {
     setEditPrice('');
   };
 
-  // Item Management
   const addItem = () => {
     if (newItemName.trim() && newItemPrice.trim()) {
       const newItem = {
@@ -76,7 +57,7 @@ function App() {
           ? { ...item, name: editName.trim(), price: parseFloat(editPrice) }
           : item
       ));
-      setEditingItem(namespace);
+      setEditingItem(null);
       setEditName('');
       setEditPrice('');
     }
@@ -98,8 +79,6 @@ function App() {
     }
   };
 
-  // People Management
-bas
   const addPerson = () => {
     if (newPersonName.trim()) {
       const newPerson = {
@@ -120,7 +99,6 @@ bas
     setAssignments(newAssignments);
   };
 
-  // Assignment Management
   const toggleAssignment = (itemId, personId) => {
     const currentAssignments = assignments[itemId] || [];
     const isAssigned = currentAssignments.includes(personId);
@@ -138,7 +116,6 @@ bas
     }
   };
 
-  // Calculation Functions
   const getSubtotal = () => {
     return items.reduce((sum, item) => sum + item.price, 0);
   };
@@ -276,9 +253,7 @@ bas
 
   const getPersonItems = (personId) => {
     return items.filter(item => {
-      const assignedPeople =
-
- assignments[item.id] || [];
+      const assignedPeople = assignments[item.id] || [];
       return assignedPeople.includes(personId);
     }).map(item => ({
       ...item,
@@ -286,7 +261,6 @@ bas
     }));
   };
 
-  // JSX Rendering
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -299,7 +273,6 @@ bas
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {/* Card 1: Bill Items */}
           <div className="bg-white rounded-lg shadow-md p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Bill Items</h2>
             <div className="space-y-3 mb-4">
@@ -375,7 +348,6 @@ bas
             </div>
           </div>
 
-          {/* Card 2: People */}
           <div className="bg-white rounded-lg shadow-md p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">People</h2>
             <div className="space-y-3 mb-4">
@@ -405,7 +377,6 @@ bas
             </div>
           </div>
 
-          {/* Card 3: Who Ordered What? */}
           <div className="bg-white rounded-lg shadow-md p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Who Ordered What?</h2>
             <div className="space-y-4">
@@ -444,7 +415,6 @@ bas
             </div>
           </div>
 
-          {/* Card 4: Tax & Tip */}
           <div className="bg-white rounded-lg shadow-md p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Tax & Tip</h2>
             <div className="space-y-4">
@@ -493,7 +463,6 @@ bas
             </div>
           </div>
 
-          {/* Card 5: Settlement Summary */}
           <div className="bg-white rounded-lg shadow-md p-6 h-fit lg:col-span-2">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Settlement Summary</h2>
             <div className="bg-gray-50 p-4 rounded-md mb-6">
@@ -545,7 +514,6 @@ bas
             </div>
           </div>
 
-          {/* Person Detail Modal */}
           {selectedPerson && (
             <div 
               className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
@@ -614,6 +582,5 @@ bas
   );
 }
 
-// Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(App));
