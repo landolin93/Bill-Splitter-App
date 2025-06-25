@@ -1,4 +1,4 @@
-const { useState } = React;
+const { useState, useRef } = React;
 
 function App() {
   const [items, setItems] = useState([]);
@@ -22,6 +22,8 @@ function App() {
     taxTip: false,
     summary: false
   });
+  const summaryRef = useRef(null);
+  const individualBillRef = useRef(null);
 
   const toggleCard = (cardKey) => {
     setCardCollapsed(prev => ({
@@ -290,6 +292,43 @@ function App() {
     setShowChart(!showChart);
   };
 
+  const exportImages = async () => {
+    const downloadImage = (canvas, filename) => {
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    // Ensure Summary card is expanded
+    if (cardCollapsed.summary) {
+      toggleCard('summary');
+      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for render
+    }
+
+    // Capture Summary card in current view
+    const summaryCanvas = await html2canvas(summaryRef.current, { scale: 2 });
+    downloadImage(summaryCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
+
+    // Toggle to opposite view and capture
+    toggleView();
+    await new Promise(resolve => setTimeout(resolve, 100)); // Wait for render
+    const summaryAltCanvas = await html2canvas(summaryRef.current, { scale: 2 });
+    downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
+    toggleView(); // Restore original view
+
+    // Capture individual bill summaries
+    for (const person of people) {
+      setSelectedPerson(person);
+      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for modal render
+      const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
+      downloadImage(billCanvas, `${person.name}-Bill.png`);
+    }
+    setSelectedPerson(null); // Close modal
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -402,7 +441,7 @@ function App() {
                     type="text"
                     placeholder="Person's name"
                     value={newPersonName}
-                    onChange={(e) => setNewPersonName(e.target.value)}
+                    onChange={(e) => setNewItemName(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && addPerson()}
                   />
@@ -528,7 +567,7 @@ function App() {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-md p-6 h-fit lg:col-span-2" ref={summaryRef}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-gray-800">📊 Summary</h2>
               <button
@@ -621,6 +660,12 @@ function App() {
                     })}
                   </div>
                 )}
+                <div className="mt-6">
+                  <button
+                    onClick={exportImages}
+                    className="w-full bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 transition-colors font-medium"
+                  >Export</button>
+                </div>
               </div>
             )}
           </div>
@@ -633,6 +678,7 @@ function App() {
               <div 
                 className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
+                ref={individualBillRef}
               >
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
