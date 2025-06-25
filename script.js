@@ -359,6 +359,12 @@ function App() {
     }
   };
 
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -714,7 +720,7 @@ function App() {
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <h3 className="text-xl font-semibold">{selectedPerson.name}'s Check</h3>
-                      <div className="text-sm text-gray-600">June 25, 2025</div>
+                      <div className="text-sm text-gray-600">{currentDate}</div>
                     </div>
                     <button
                       onClick={() => setSelectedPerson(null)}
@@ -746,19 +752,11 @@ function App() {
                               </div>
                               <div className="flex justify-between">
                                 <span>Tax:</span>
-                                <span>${costs.tax.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Tax Rate:</span>
-                                <span>{costs.taxRate.toFixed(1)}%</span>
+                                <span>${costs.tax.toFixed(2)} <span className="italic text-gray-500">({costs.taxRate.toFixed(1)}% effective)</span></span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Tip:</span>
-                                <span>${costs.tip.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Tip Rate:</span>
-                                <span>{costs.tipRate.toFixed(1)}%</span>
+                                <span>${costs.tip.toFixed(2)} <span className="italic text-gray-500">({costs.tipRate.toFixed(1)}% effective)</span></span>
                               </div>
                               <div className="flex justify-between font-semibold text-lg border-t pt-2">
                                 <span>Total:</span>
