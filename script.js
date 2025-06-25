@@ -1,6 +1,6 @@
 const { useState } = React;
 
-const App = () => {
+function App() {
   // State Management
   const [items, setItems] = useState([]);
   const [people, setPeople] = useState([]);
@@ -14,6 +14,22 @@ const App = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
+ 	beforeEach(() => {
+		// Reset state before each test
+		setItems([]);
+		setPeople([]);
+		setAssignments({});
+		setTax({ type: 'percentage', value: 0 });
+		setTip({ percentage: 0 });
+		setRounding('none');
+		setSelectedPerson(null);
+		setNewItemName('');
+		setNewItemPrice('');
+		setEditingItem(null);
+		setEditName('');
+		setEditPrice('');
+		setNewPersonName('');
+	});
   const [newPersonName, setNewPersonName] = useState('');
 
   // Reset Function
@@ -60,7 +76,7 @@ const App = () => {
           ? { ...item, name: editName.trim(), price: parseFloat(editPrice) }
           : item
       ));
-      setEditingItem(null);
+      setEditingItem(namespace);
       setEditName('');
       setEditPrice('');
     }
@@ -83,6 +99,7 @@ const App = () => {
   };
 
   // People Management
+bas
   const addPerson = () => {
     if (newPersonName.trim()) {
       const newPerson = {
@@ -259,7 +276,9 @@ const App = () => {
 
   const getPersonItems = (personId) => {
     return items.filter(item => {
-      const assignedPeople = assignments[item.id] || [];
+      const assignedPeople =
+
+ assignments[item.id] || [];
       return assignedPeople.includes(personId);
     }).map(item => ({
       ...item,
@@ -373,7 +392,7 @@ const App = () => {
                 className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
               >Add Person</button>
             </div>
-            <div className="flex flex PT1 flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {people.map(person => (
                 <div key={person.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
                   <span>{person.name}</span>
@@ -455,9 +474,7 @@ const App = () => {
                   type="number"
                   value={tip.percentage}
                   onChange={(e) => setTip({ percentage: parseFloat(e.target.value) || 0 })}
-                  className="w-full pxავ
-
-                  px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter tip percentage"
                 />
               </div>
@@ -595,7 +612,7 @@ const App = () => {
       </div>
     </div>
   );
-};
+}
 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
