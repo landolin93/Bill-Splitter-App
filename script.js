@@ -315,33 +315,33 @@ function App() {
       // Ensure Summary card is expanded
       if (cardCollapsed.summary) {
         toggleCard('summary');
-        await delay(300);
+        await delay(1000);
       }
 
       // Capture Summary card in current view
       if (!summaryRef.current) throw new Error('Summary card not found');
       const summaryCanvas = await html2canvas(summaryRef.current, { scale: 2 });
       await downloadImage(summaryCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-      await delay(300);
+      await delay(1000);
 
       // Toggle to opposite view and capture
       toggleView();
-      await delay(300);
+      await delay(1000);
       if (!summaryRef.current) throw new Error('Summary card not found after toggle');
       const summaryAltCanvas = await html2canvas(summaryRef.current, { scale: 2 });
       await downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-      await delay(300);
+      await delay(1000);
       toggleView();
-      await delay(300);
+      await delay(1000);
 
       // Capture individual bill summaries
       for (const person of people) {
         setSelectedPerson(person);
-        await delay(300);
+        await delay(1000);
         if (!individualBillRef.current) throw new Error(`Individual bill for ${person.name} not found`);
         const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
         await downloadImage(billCanvas, `${person.name}-Bill.png`);
-        await delay(300);
+        await delay(1000);
       }
       setSelectedPerson(null);
 
