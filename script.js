@@ -293,40 +293,55 @@ function App() {
   };
 
   const exportImages = async () => {
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
     const downloadImage = (canvas, filename) => {
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error(`Failed to download ${filename}:`, error);
+      }
     };
 
-    // Ensure Summary card is expanded
-    if (cardCollapsed.summary) {
-      toggleCard('summary');
-      await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      // Ensure Summary card is expanded
+      if (cardCollapsed.summary) {
+        toggleCard('summary');
+        await delay(200); // Increased delay for DOM stability
+      }
+
+      // Capture Summary card in current view
+      const summaryCanvas = await html2canvas(summaryRef.current, { scale: 2 });
+      downloadImage(summaryCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
+      await delay(200); // Wait after download
+
+      // Toggle to opposite view and capture
+      toggleView();
+      await delay(200);
+      const summaryAltCanvas = await html2canvas(summaryRef.current, { scale: 2 });
+      downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
+      await delay(200);
+      toggleView(); // Restore original view
+      await delay(200);
+
+      // Capture individual bill summaries
+      for (const person of people) {
+        setSelectedPerson(person);
+        await delay(200);
+        const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
+        downloadImage(billCanvas, `${person.name}-Bill.png`);
+        await delay(200);
+      }
+      setSelectedPerson(null);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please check the console for details.');
     }
-
-    // Capture Summary card in current view
-    const summaryCanvas = await html2canvas(summaryRef.current, { scale: 2 });
-    downloadImage(summaryCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-
-    // Toggle to opposite view and capture
-    toggleView();
-    await new Promise(resolve => setTimeout(resolve, 100));
-    const summaryAltCanvas = await html2canvas(summaryRef.current, { scale: 2 });
-    downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-    toggleView();
-
-    // Capture individual bill summaries
-    for (const person of people) {
-      setSelectedPerson(person);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
-      downloadImage(billCanvas, `${person.name}-Bill.png`);
-    }
-    setSelectedPerson(null);
   };
 
   return (
@@ -441,7 +456,7 @@ function App() {
                     type="text"
                     placeholder="Person's name"
                     value={newPersonName}
-                    onChange={(e) => setNewPersonName(e.target.value)} // Fixed handler
+                    onChange={(e) => setNewPersonName(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && addPerson()}
                   />
