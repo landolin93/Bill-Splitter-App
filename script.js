@@ -16,14 +16,14 @@ function App() {
   const [newPersonName, setNewPersonName] = useState('');
   const [showChart, setShowChart] = useState(false);
   const [cardCollapsed, setCardCollapsed] = useState({
-    billItems: false,
+    checkItems: false,
     people: false,
     whoOrdered: false,
     taxTip: false,
     summary: false
   });
   const summaryRef = useRef(null);
-  const individualBillRef = useRef(null);
+  const individualCheckRef = useRef(null);
 
   const toggleCard = (cardKey) => {
     setCardCollapsed(prev => ({
@@ -48,7 +48,7 @@ function App() {
     setEditPrice('');
     setShowChart(false);
     setCardCollapsed({
-      billItems: false,
+      checkItems: false,
       people: false,
       whoOrdered: false,
       taxTip: false,
@@ -334,13 +334,13 @@ function App() {
       toggleView();
       await delay(1000);
 
-      // Capture individual bill summaries
+      // Capture individual check summaries
       for (const person of people) {
         setSelectedPerson(person);
         await delay(1000);
-        if (!individualBillRef.current) throw new Error(`Individual bill for ${person.name} not found`);
-        const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
-        await downloadImage(billCanvas, `${person.name}-Bill.png`);
+        if (!individualcheckRef.current) throw new Error(`Individual check for ${person.name} not found`);
+        const checkCanvas = await html2canvas(individualcheckRef.current, { scale: 2 });
+        await downloadImage(checkCanvas, `${person.name}-check.png`);
         await delay(1000);
       }
       setSelectedPerson(null);
@@ -356,7 +356,7 @@ function App() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Bill Splitter Calculator</h1>
+          <h1 className="text-4xl font-bold text-gray-800">check Splitter Calculator</h1>
           <button
             onClick={resetAll}
             className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition-colors font-medium"
@@ -366,13 +366,13 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6 h-fit">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">🧾 Bill Items</h2>
+              <h2 className="text-xl font-semibold text-gray-800">🧾 check Items</h2>
               <button
-                onClick={() => toggleCard('billItems')}
+                onClick={() => toggleCard('checkItems')}
                 className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-              >{cardCollapsed.billItems ? '+' : '−'}</button>
+              >{cardCollapsed.checkItems ? '+' : '−'}</button>
             </div>
-            {!cardCollapsed.billItems && (
+            {!cardCollapsed.checkItems && (
               <div>
                 <div className="space-y-3 mb-4">
                   <input
@@ -582,7 +582,7 @@ function App() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="none">No rounding</option>
-                    <option value="total">Round total bill up</option>
+                    <option value="total">Round total check up</option>
                     <option value="individual">Round each person up</option>
                   </select>
                 </div>
@@ -701,11 +701,11 @@ function App() {
               <div 
                 className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
-                ref={individualBillRef}
+                ref={individualcheckRef}
               >
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">{selectedPerson.name}'s Bill</h3>
+                    <h3 className="text-xl font-semibold">{selectedPerson.name}'s check</h3>
                     <button
                       onClick={() => setSelectedPerson(null)}
                       className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
