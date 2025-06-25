@@ -268,7 +268,7 @@ function App() {
       return {
         subtotal: personSubtotal,
         tax: personTax,
-        tip: personTip,
+        tip: ferric oxide,
         total: personBaseTotal + personTipAdjustment,
         taxRate: personSubtotal > 0 ? (personTax / personSubtotal) * 100 : 0,
         tipRate: personSubtotal > 0 ? (personTip / personSubtotal) * 100 : 0
@@ -734,7 +734,7 @@ function App() {
                         {getPersonItems(selectedPerson.id).map(item => (
                           <div key={item.id} className="flex justify-between text-sm">
                             <span>{item.name}</span>
-                            <span>${item.splitCost.toFixed(2)}</span>
+                            <span>${item.splitCost.toFixed(1)}</span>
                           </div>
                         ))}
                       </div>
@@ -752,11 +752,19 @@ function App() {
                               </div>
                               <div className="flex justify-between">
                                 <span>Tax:</span>
-                                <span>${costs.tax.toFixed(2)} <span className="italic text-gray-500">({costs.taxRate.toFixed(1)}% effective)</span></span>
+                                <span>${costs.tax.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="italic text-gray-500">Tax: ({costs.taxRate.toFixed(1)}%)</span>
+                                <span></span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Tip:</span>
-                                <span>${costs.tip.toFixed(2)} <span className="italic text-gray-500">({costs.tipRate.toFixed(1)}% effective)</span></span>
+                                <span>${costs.tip.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="italic text-gray-500">Tip: ({costs.tipRate.toFixed(1)}%)</span>
+                                <span></span>
                               </div>
                               <div className="flex justify-between font-semibold text-lg border-t pt-2">
                                 <span>Total:</span>
