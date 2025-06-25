@@ -4,99 +4,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bill Splitter Calculator</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React and ReactDOM CDNs -->
+  <!-- Precompiled Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- React CDNs -->
   <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <!-- Babel Standalone for JSX -->
   <script src="https://unpkg.com/@babel/standalone@7.22.5/babel.min.js"></script>
   <style>
-    /* Base styles from index.css */
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-
     code {
       font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
     }
-
-    /* Styles from App.css */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
-    /* Custom scrollbar for modal */
     ::-webkit-scrollbar {
       width: 6px;
     }
-
     ::-webkit-scrollbar-track {
       background: #f1f1f1;
       border-radius: 3px;
     }
-
     ::-webkit-scrollbar-thumb {
       background: #c1c1c1;
       border-radius: 3px;
     }
-
     ::-webkit-scrollbar-thumb:hover {
       background: #a8a8a8;
     }
-
-    /* Animation for card hover effects */
     .bg-white {
       transition: all 0.2s ease-in-out;
     }
-
     .bg-white:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
-
-    /* Button hover animations */
     button {
       transition: all 0.2s ease-in-out;
     }
-
-    /* Modal animation */
     .fixed.inset-0 {
       animation: fadeIn 0.2s ease-out;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-
-    /* Pill animation */
     .rounded-full {
       transition: all 0.2s ease-in-out;
     }
-
-    /* Input focus styles */
     input:focus, select:focus {
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-
-    /* Card expansion animation */
     .h-fit {
       transition: height 0.3s ease-in-out;
     }
-
-    /* Responsive grid adjustments */
     @media (max-width: 1024px) {
       .grid-cols-1.lg\:grid-cols-2.xl\:grid-cols-3 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
-
     @media (max-width: 768px) {
       .grid-cols-1.lg\:grid-cols-2.xl\:grid-cols-3 {
         grid-template-columns: 1fr;
