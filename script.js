@@ -4,8 +4,8 @@ function App() {
   const [items, setItems] = useState([]);
   const [people, setPeople] = useState([]);
   const [assignments, setAssignments] = useState({});
-  const [tax, setTax] = useState({ type: 'percentage', value: 0 });
-  const [tip, setTip] = useState({ percentage: 0 });
+  const [tax, setTax] = useState({ type: 'dollar', value: '' }); // Default to dollar, empty value
+  const [tip, setTip] = useState({ percentage: '' }); // Empty percentage
   const [rounding, setRounding] = useState('none');
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [newItemName, setNewItemName] = useState('');
@@ -14,14 +14,28 @@ function App() {
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
   const [newPersonName, setNewPersonName] = useState('');
-  const [showChart, setShowChart] = useState(false); // New state for toggling view
+  const [showChart, setShowChart] = useState(false);
+  const [cardVisibility, setCardVisibility] = useState({
+    billItems: true,
+    people: true,
+    whoOrdered: true,
+    taxTip: true,
+    summary: true
+  });
+
+  const toggleCard = (cardKey) => {
+    setCardVisibility(prev => ({
+      ...prev,
+      [cardKey]: !prev[cardKey]
+    }));
+  };
 
   const resetAll = () => {
     setItems([]);
     setPeople([]);
     setAssignments({});
-    setTax({ type: 'percentage', value: 0 });
-    setTip({ percentage: 0 });
+    setTax({ type: 'dollar', value: '' });
+    setTip({ percentage: '' });
     setRounding('none');
     setSelectedPerson(null);
     setNewItemName('');
@@ -31,6 +45,13 @@ function App() {
     setEditName('');
     setEditPrice('');
     setShowChart(false);
+    setCardVisibility({
+      billItems: true,
+      people: true,
+      whoOrdered: true,
+      taxTip: true,
+      summary: true
+    });
   };
 
   const addItem = () => {
@@ -124,16 +145,18 @@ function App() {
 
   const getTaxAmount = () => {
     const subtotal = getSubtotal();
+    const taxValue = parseFloat(tax.value) || 0;
     if (tax.type === 'dollar') {
-      return tax.value;
+      return taxValue;
     } else {
-      return subtotal * (tax.value / 100);
+      return subtotal * (taxValue / 100);
     }
   };
 
   const getBaseTipAmount = () => {
     const subtotal = getSubtotal();
-    return subtotal * (tip.percentage / 100);
+    const tipValue = parseFloat(tip.percentage) || 0;
+    return subtotal * (tipValue / 100);
   };
 
   const getTipAmount = () => {
@@ -279,282 +302,322 @@ function App() {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Bill Items</h2>
-            <div className="space-y-3 mb-4">
-              <input
-                type="text"
-                placeholder="Item name"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onKeyPress={(e) => e.key === 'Enter' && addItem()}
-              />
-              <input
-                type="number"
-                placeholder="Price ($)"
-                value={newItemPrice}
-                onChange={(e) => setNewItemPrice(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onKeyPress={(e) => e.key === 'Enter' && addItem()}
-              />
-              <button
-                onClick={addItem}
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-              >Add Item</button>
-            </div>
-            <div className="space-y-2">
-              {items.map(item => (
-                <div key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md">
-                  {editingItem === item.id ? (
-                    <div className="flex-1 space-y-2">
-                      <input
-                        type="text"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        onKeyPress={(e) => e.key === 'Enter' && saveEditItem()}
-                        autoFocus
-                      />
-                      <input
-                        type="number"
-                        value={editPrice}
-                        onChange={(e) => setEditPrice(e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        onKeyPress={(e) => e.key === 'Enter' && saveEditItem()}
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={saveEditItem}
-                          className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
-                        >Save</button>
-                        <button
-                          onClick={cancelEditItem}
-                          className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600 transition-colors"
-                        >Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => startEditItem(item)}
-                        className="flex-1 text-left hover:bg-gray-100 p-1 rounded transition-colors"
-                      >
-                        <span className="font-medium">{item.name}</span>
-                        <span className="text-green-600 ml-2">${item.price.toFixed(2)}</span>
-                      </button>
-                      <button
-                        onClick={() => deleteItem(item.id)}
-                        className="text-red-500 hover:text-red-700 text-xl font-bold ml-2"
-                      >×</button>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">People</h2>
-            <div className="space-y-3 mb-4">
-              <input
-                type="text"
-                placeholder="Person's name"
-                value={newPersonName}
-                onChange={(e) => setNewPersonName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onKeyPress={(e) => e.key === 'Enter' && addPerson()}
-              />
-              <button
-                onClick={addPerson}
-                className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
-              >Add Person</button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {people.map(person => (
-                <div key={person.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
-                  <span>{person.name}</span>
-                  <button
-                    onClick={() => deletePerson(person.id)}
-                    className="text-red-500 hover:text-red-700 font-bold"
-                  >×</button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Who Ordered What?</h2>
-            <div className="space-y-4">
-              {items.map(item => {
-                const assignedPeople = assignments[item.id] || [];
-                const splitCount = assignedPeople.length;
-                const costPerPerson = splitCount > 0 ? item.price / splitCount : item.price;
-                
-                return (
-                  <div key={item.id} className="border border-gray-200 rounded-md p-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">{item.name}</span>
-                      <span className="text-green-600">${item.price.toFixed(2)}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {people.map(person => (
-                        <button
-                          key={person.id}
-                          onClick={() => toggleAssignment(item.id, person.id)}
-                          className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                            assignedPeople.includes(person.id)
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >{person.name}</button>
-                      ))}
-                    </div>
-                    {splitCount > 0 && (
-                      <div className="text-sm text-gray-600">
-                        Split {splitCount} way{splitCount > 1 ? 's' : ''}: ${costPerPerson.toFixed(2)} each
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Tax & Tip</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tax</label>
-                <div className="flex gap-2">
-                  <select
-                    value={tax.type}
-                    onChange={(e) => setTax({ ...tax, type: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="percentage">%</option>
-                    <option value="dollar">$</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={tax.value}
-                    onChange={(e) => setTax({ ...tax, value: parseFloat(e.target.value) || 0 })}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder={tax.type === 'percentage' ? 'Enter %' : 'Enter $'}
-                  />
-                </div>
+          {cardVisibility.billItems && (
+            <div className="bg-white rounded-lg shadow-md p-6 h-fit">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">🧾 Bill Items</h2>
+                <button
+                  onClick={() => toggleCard('billItems')}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >{cardVisibility.billItems ? '−' : '+'}</button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tip (%)</label>
+              <div className="space-y-3 mb-4">
+                <input
+                  type="text"
+                  placeholder="Item name"
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyPress={(e) => e.key === 'Enter' && addItem()}
+                />
                 <input
                   type="number"
-                  value={tip.percentage}
-                  onChange={(e) => setTip({ percentage: parseFloat(e.target.value) || 0 })}
+                  placeholder="Price ($)"
+                  value={newItemPrice}
+                  onChange={(e) => setNewItemPrice(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter tip percentage"
+                  onKeyPress={(e) => e.key === 'Enter' && addItem()}
                 />
+                <button
+                  onClick={addItem}
+                  className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+                >Add Item</button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Rounding</label>
-                <select
-                  value={rounding}
-                  onChange={(e) => setRounding(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="none">No rounding</option>
-                  <option value="total">Round total bill up</option>
-                  <option value="individual">Round each person up</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit lg:col-span-2">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Settlement Summary</h2>
-            <div className="bg-gray-50 p-4 rounded-md mb-6">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>${getSubtotal().toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax:</span>
-                  <span>${getTaxAmount().toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tip:</span>
-                  <div className="text-right">
-                    <div>${getTipAmount().toFixed(2)}</div>
-                    {rounding !== 'none' && getEffectiveTipPercentage() !== tip.percentage && (
-                      <div className="text-xs text-gray-600">
-                        ({getEffectiveTipPercentage().toFixed(1)}% effective)
+              <div className="space-y-2">
+                {items.map(item => (
+                  <div key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md">
+                    {editingItem === item.id ? (
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onKeyPress={(e) => e.key === 'Enter' && saveEditItem()}
+                          autoFocus
+                        />
+                        <input
+                          type="number"
+                          value={editPrice}
+                          onChange={(e) => setEditPrice(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onKeyPress={(e) => e.key === 'Enter' && saveEditItem()}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={saveEditItem}
+                            className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+                          >Save</button>
+                          <button
+                            onClick={cancelEditItem}
+                            className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600 transition-colors"
+                          >Cancel</button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEditItem(item)}
+                          className="flex-1 text-left hover:bg-gray-100 p-1 rounded transition-colors"
+                        >
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-green-600 ml-2">${item.price.toFixed(2)}</span>
+                        </button>
+                        <button
+                          onClick={() => deleteItem(item.id)}
+                          className="text-red-500 hover:text-red-700 text-xl font-bold ml-2"
+                        >×</button>
+                      </>
                     )}
                   </div>
-                </div>
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Total:</span>
-                  <span>${getTotal().toFixed(2)}</span>
-                </div>
+                ))}
               </div>
             </div>
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium text-gray-800">Individual Totals</h3>
-              <button
-                onClick={toggleView}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors font-medium"
-              >
-                {showChart ? 'Show Totals' : 'Show Chart'}
-              </button>
-            </div>
-            {showChart ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 rounded-md">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Name</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Meal Cost</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tax</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tip</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {people.map(person => {
-                      const costs = getPersonTotal(person.id);
-                      return (
-                        <tr key={person.id} className="border-t hover:bg-gray-50">
-                          <td className="px-4 py-2 text-sm text-gray-800">{person.name}</td>
-                          <td className="px-4 py-2 text-sm text-gray-800">${costs.subtotal.toFixed(2)}</td>
-                          <td className="px-4 py-2 text-sm text-gray-800">${costs.tax.toFixed(2)}</td>
-                          <td className="px-4 py-2 text-sm text-gray-800">${costs.tip.toFixed(2)}</td>
-                          <td className="px-4 py-2 text-sm font-semibold text-blue-600">${costs.total.toFixed(2)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          )}
+
+          {cardVisibility.people && (
+            <div className="bg-white rounded-lg shadow-md p-6 h-fit">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">👥 People</h2>
+                <button
+                  onClick={() => toggleCard('people')}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >{cardVisibility.people ? '−' : '+'}</button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {people.map(person => {
-                  const personCosts = getPersonTotal(person.id);
-                  return (
+              <div className="space-y-3 mb-4">
+                <input
+                  type="text"
+                  placeholder="Person's name"
+                  value={newPersonName}
+                  onChange={(e) => setNewPersonName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyPress={(e) => e.key === 'Enter' && addPerson()}
+                />
+                <button
+                  onClick={addPerson}
+                  className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
+                >Add Person</button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {people.map(person => (
+                  <div key={person.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
+                    <span>{person.name}</span>
                     <button
-                      key={person.id}
-                      onClick={() => setSelectedPerson(person)}
-                      className="bg-blue-50 p-3 rounded-md hover:bg-blue-100 transition-colors w-full text-left"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">{person.name}</span>
-                        <span className="text-blue-600 font-semibold">${personCosts.total.toFixed(2)}</span>
+                      onClick={() => deletePerson(person.id)}
+                      className="text-red-500 hover:text-red-700 font-bold"
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cardVisibility.whoOrdered && (
+            <div className="bg-white rounded-lg shadow-md p-6 h-fit">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">🍽️ Who Ordered What?</h2>
+                <button
+                  onClick={() => toggleCard('whoOrdered')}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >{cardVisibility.whoOrdered ? '−' : '+'}</button>
+              </div>
+              <div className="space-y-4">
+                {items.map(item => {
+                  const assignedPeople = assignments[item.id] || [];
+                  const splitCount = assignedPeople.length;
+                  const costPerPerson = splitCount > 0 ? item.price / splitCount : item.price;
+                  
+                  return (
+                    <div key={item.id} className="border border-gray-200 rounded-md p-3">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-green-600">${item.price.toFixed(2)}</span>
                       </div>
-                    </button>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {people.map(person => (
+                          <button
+                            key={person.id}
+                            onClick={() => toggleAssignment(item.id, person.id)}
+                            className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                              assignedPeople.includes(person.id)
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                          >{person.name}</button>
+                        ))}
+                      </div>
+                      {splitCount > 0 && (
+                        <div className="text-sm text-gray-600">
+                          Split {splitCount} way{splitCount > 1 ? 's' : ''}: ${costPerPerson.toFixed(2)} each
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {cardVisibility.taxTip && (
+            <div className="bg-white rounded-lg shadow-md p-6 h-fit">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">💸 Tax & Tip</h2>
+                <button
+                  onClick={() => toggleCard('taxTip')}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >{cardVisibility.taxTip ? '−' : '+'}</button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tax</label>
+                  <div className="flex gap-2">
+                    <select
+                      value={tax.type}
+                      onChange={(e) => setTax({ ...tax, type: e.target.value })}
+                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="dollar">$</option>
+                      <option value="percentage">%</option>
+                    </select>
+                    <input
+                      type="number"
+                      value={tax.value}
+                      onChange={(e) => setTax({ ...tax, value: e.target.value })}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder={tax.type === 'percentage' ? 'Enter %' : 'Enter $'}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tip (%)</label>
+                  <input
+                    type="number"
+                    value={tip.percentage}
+                    onChange={(e) => setTip({ percentage: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter tip percentage"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Rounding</label>
+                  <select
+                    value={rounding}
+                    onChange={(e) => setRounding(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="none">No rounding</option>
+                    <option value="total">Round total bill up</option>
+                    <option value="individual">Round each person up</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {cardVisibility.summary && (
+            <div className="bg-white rounded-lg shadow-md p-6 h-fit lg:col-span-2">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">📊 Summary</h2>
+                <button
+                  onClick={() => toggleCard('summary')}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >{cardVisibility.summary ? '−' : '+'}</button>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-md mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>${getSubtotal().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tax:</span>
+                    <span>${getTaxAmount().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tip:</span>
+                    <div className="text-right">
+                      <div>${getTipAmount().toFixed(2)}</div>
+                      {rounding !== 'none' && getEffectiveTipPercentage() !== parseFloat(tip.percentage) && (
+                        <div className="text-xs text-gray-600">
+                          ({getEffectiveTipPercentage().toFixed(1)}% effective)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between font-semibold text-lg">
+                    <span>Total:</span>
+                    <span>${getTotal().toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium text-gray-800">Individual Totals</h3>
+                <button
+                  onClick={toggleView}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors font-medium"
+                >
+                  {showChart ? 'Show Totals' : 'Show Chart'}
+                </button>
+              </div>
+              {showChart ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white border border-gray-200 rounded-md">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Name</th>
+                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Meal Cost</th>
+                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tax</th>
+                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tip</th>
+                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {people.map(person => {
+                        const costs = getPersonTotal(person.id);
+                        return (
+                          <tr key={person.id} className="border-t hover:bg-gray-50">
+                            <td className="px-4 py-2 text-sm text-gray-800">{person.name}</td>
+                            <td className="px-4 py-2 text-sm text-gray-800">${costs.subtotal.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-sm text-gray-800">${costs.tax.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-sm text-gray-800">${costs.tip.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-sm font-semibold text-blue-600">${costs.total.toFixed(2)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {people.map(person => {
+                    const personCosts = getPersonTotal(person.id);
+                    return (
+                      <button
+                        key={person.id}
+                        onClick={() => setSelectedPerson(person)}
+                        className="bg-blue-50 p-3 rounded-md hover:bg-blue-100 transition-colors w-full text-left"
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">{person.name}</span>
+                          <span className="text-blue-600 font-semibold">${personCosts.total.toFixed(2)}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {selectedPerson && (
             <div 
