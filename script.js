@@ -305,7 +305,7 @@ function App() {
     // Ensure Summary card is expanded
     if (cardCollapsed.summary) {
       toggleCard('summary');
-      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for render
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Capture Summary card in current view
@@ -314,19 +314,19 @@ function App() {
 
     // Toggle to opposite view and capture
     toggleView();
-    await new Promise(resolve => setTimeout(resolve, 100)); // Wait for render
+    await new Promise(resolve => setTimeout(resolve, 100));
     const summaryAltCanvas = await html2canvas(summaryRef.current, { scale: 2 });
     downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-    toggleView(); // Restore original view
+    toggleView();
 
     // Capture individual bill summaries
     for (const person of people) {
       setSelectedPerson(person);
-      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for modal render
+      await new Promise(resolve => setTimeout(resolve, 100));
       const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
       downloadImage(billCanvas, `${person.name}-Bill.png`);
     }
-    setSelectedPerson(null); // Close modal
+    setSelectedPerson(null);
   };
 
   return (
@@ -441,7 +441,7 @@ function App() {
                     type="text"
                     placeholder="Person's name"
                     value={newPersonName}
-                    onChange={(e) => setNewItemName(e.target.value)}
+                    onChange={(e) => setNewPersonName(e.target.value)} // Fixed handler
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && addPerson()}
                   />
