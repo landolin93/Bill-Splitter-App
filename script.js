@@ -14,6 +14,7 @@ function App() {
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
   const [newPersonName, setNewPersonName] = useState('');
+  const [showChart, setShowChart] = useState(false); // New state for toggling view
 
   const resetAll = () => {
     setItems([]);
@@ -29,6 +30,7 @@ function App() {
     setEditingItem(null);
     setEditName('');
     setEditPrice('');
+    setShowChart(false);
   };
 
   const addItem = () => {
@@ -259,6 +261,10 @@ function App() {
       ...item,
       splitCost: item.price / (assignments[item.id]?.length || 1)
     }));
+  };
+
+  const toggleView = () => {
+    setShowChart(!showChart);
   };
 
   return (
@@ -492,8 +498,44 @@ function App() {
                 </div>
               </div>
             </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-3">Individual Totals</h3>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-medium text-gray-800">Individual Totals</h3>
+              <button
+                onClick={toggleView}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors font-medium"
+              >
+                {showChart ? 'Show Totals' : 'Show Chart'}
+              </button>
+            </div>
+            {showChart ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-gray-200 rounded-md">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Name</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Meal Cost</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tax</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tip</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {people.map(person => {
+                      const costs = getPersonTotal(person.id);
+                      return (
+                        <tr key={person.id} className="border-t hover:bg-gray-50">
+                          <td className="px-4 py-2 text-sm text-gray-800">{person.name}</td>
+                          <td className="px-4 py-2 text-sm text-gray-800">${costs.subtotal.toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm text-gray-800">${costs.tax.toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm text-gray-800">${costs.tip.toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm font-semibold text-blue-600">${costs.total.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {people.map(person => {
                   const personCosts = getPersonTotal(person.id);
@@ -511,7 +553,7 @@ function App() {
                   );
                 })}
               </div>
-            </div>
+            )}
           </div>
 
           {selectedPerson && (
