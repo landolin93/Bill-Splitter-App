@@ -294,8 +294,9 @@ function App() {
 
   const exportImages = async () => {
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const downloadedImages = [];
 
-    const downloadImage = (canvas, filename) => {
+    const downloadImage = async (canvas, filename) => {
       try {
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
@@ -303,8 +304,10 @@ function App() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        downloadedImages.push(filename);
       } catch (error) {
         console.error(`Failed to download ${filename}:`, error);
+        throw error;
       }
     };
 
@@ -312,35 +315,40 @@ function App() {
       // Ensure Summary card is expanded
       if (cardCollapsed.summary) {
         toggleCard('summary');
-        await delay(200); // Increased delay for DOM stability
+        await delay(300);
       }
 
       // Capture Summary card in current view
+      if (!summaryRef.current) throw new Error('Summary card not found');
       const summaryCanvas = await html2canvas(summaryRef.current, { scale: 2 });
-      downloadImage(summaryCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-      await delay(200); // Wait after download
+      await downloadImage(summaryCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
+      await delay(300);
 
       // Toggle to opposite view and capture
       toggleView();
-      await delay(200);
+      await delay(300);
+      if (!summaryRef.current) throw new Error('Summary card not found after toggle');
       const summaryAltCanvas = await html2canvas(summaryRef.current, { scale: 2 });
-      downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
-      await delay(200);
-      toggleView(); // Restore original view
-      await delay(200);
+      await downloadImage(summaryAltCanvas, `Summary-${showChart ? 'Chart' : 'Totals'}.png`);
+      await delay(300);
+      toggleView();
+      await delay(300);
 
       // Capture individual bill summaries
       for (const person of people) {
         setSelectedPerson(person);
-        await delay(200);
+        await delay(300);
+        if (!individualBillRef.current) throw new Error(`Individual bill for ${person.name} not found`);
         const billCanvas = await html2canvas(individualBillRef.current, { scale: 2 });
-        downloadImage(billCanvas, `${person.name}-Bill.png`);
-        await delay(200);
+        await downloadImage(billCanvas, `${person.name}-Bill.png`);
+        await delay(300);
       }
       setSelectedPerson(null);
+
+      alert(`Successfully exported ${downloadedImages.length} images to download. Please save them to your photo gallery.`);
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Export failed. Please check the console for details.');
+      alert('Export failed. Please check the console for details or try again.');
     }
   };
 
