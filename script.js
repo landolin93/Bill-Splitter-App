@@ -251,7 +251,9 @@ function App() {
         subtotal: personSubtotal,
         tax: personTax,
         tip: personTip,
-        total: roundedTotal
+        total: roundedTotal,
+        taxRate: personSubtotal > 0 ? (personTax / personSubtotal) * 100 : 0,
+        tipRate: personSubtotal > 0 ? (personTip / personSubtotal) * 100 : 0
       };
     } else if (rounding === 'total') {
       const baseTotal = getBaseTotal();
@@ -261,19 +263,24 @@ function App() {
       const personBaseTotal = personSubtotal + personTax + personTip;
       const adjustmentRatio = baseTotal > 0 ? personBaseTotal / baseTotal : 0;
       const personTipAdjustment = difference * adjustmentRatio;
+      personTip += personTipAdjustment;
       
       return {
         subtotal: personSubtotal,
         tax: personTax,
-        tip: personTip + personTipAdjustment,
-        total: personBaseTotal + personTipAdjustment
+        tip: personTip,
+        total: personBaseTotal + personTipAdjustment,
+        taxRate: personSubtotal > 0 ? (personTax / personSubtotal) * 100 : 0,
+        tipRate: personSubtotal > 0 ? (personTip / personSubtotal) * 100 : 0
       };
     } else {
       return {
         subtotal: personSubtotal,
         tax: personTax,
         tip: personTip,
-        total: personSubtotal + personTax + personTip
+        total: personSubtotal + personTax + personTip,
+        taxRate: personSubtotal > 0 ? (personTax / personSubtotal) * 100 : 0,
+        tipRate: personSubtotal > 0 ? (personTip / personSubtotal) * 100 : 0
       };
     }
   };
@@ -592,7 +599,7 @@ function App() {
 
           <div className="bg-white rounded-lg shadow-md p-6 h-fit lg:col-span-2" ref={summaryRef}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">📊 Summary</h2>
+              <h2 className="text-xl font-semibold text-gray-800">💰 Summary</h2>
               <button
                 onClick={() => toggleCard('summary')}
                 className="text-gray-500 hover:text-gray-700 text-xl font-bold"
@@ -705,7 +712,10 @@ function App() {
               >
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">{selectedPerson.name}'s Check</h3>
+                    <div>
+                      <h3 className="text-xl font-semibold">{selectedPerson.name}'s Check</h3>
+                      <div className="text-sm text-gray-600">June 25, 2025</div>
+                    </div>
                     <button
                       onClick={() => setSelectedPerson(null)}
                       className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -739,8 +749,16 @@ function App() {
                                 <span>${costs.tax.toFixed(2)}</span>
                               </div>
                               <div className="flex justify-between">
+                                <span>Tax Rate:</span>
+                                <span>{costs.taxRate.toFixed(1)}%</span>
+                              </div>
+                              <div className="flex justify-between">
                                 <span>Tip:</span>
                                 <span>${costs.tip.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Tip Rate:</span>
+                                <span>{costs.tipRate.toFixed(1)}%</span>
                               </div>
                               <div className="flex justify-between font-semibold text-lg border-t pt-2">
                                 <span>Total:</span>
